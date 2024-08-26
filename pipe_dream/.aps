@@ -1,0 +1,17 @@
+Help on package jobs:
+
+NNAAMMEE
+    jobs
+
+PPAACCKKAAGGEE  CCOONNTTEENNTTSS
+    admin
+    apps
+    migrations (package)
+    models
+    scheduler
+    tests
+    views
+
+FFIILLEE
+    /workspaces/mobileye/pipe_dream/jobs/__init__.py
+
