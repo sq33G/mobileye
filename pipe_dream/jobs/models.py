@@ -2,6 +2,9 @@ from django.db import models
 
 class RepoCredentials(models.Model):
     name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self) -> str:
+        return self.name
     # implement using JSON field
     # https://pypi.org/project/django-json-field/
 
@@ -10,14 +13,23 @@ class Repo(models.Model):
     url = models.URLField()
     credentials = models.ForeignKey(RepoCredentials, on_delete=models.CASCADE)
 
+    def __str__(self) -> str:
+        return self.name
+
 class DeployDestination(models.Model):
     name = models.CharField(max_length=50, unique=True)
     # implement using JSON field
+
+    def __str__(self) -> str:
+        return self.name
 
 class Job(models.Model):
     name = models.CharField(max_length=50, unique = True)
     repo = models.ForeignKey(Repo, on_delete=models.CASCADE)
     # script = models.FileField()
+
+    def __str__(self) -> str:
+        return self.name
 
 class Run(models.Model):
     class RunState(models.TextChoices):
@@ -26,6 +38,7 @@ class Run(models.Model):
         COMPLETE = 'C'
         FAILED = 'F'
 
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
     number = models.IntegerField() #not unique on its own, only per Job
     buildStatus = models.CharField(max_length=1,
                                    choices=RunState.choices,
@@ -33,3 +46,5 @@ class Run(models.Model):
     
     # store output as a JSON object, may contain paths to files with script stdout/stderr
     
+    def __str__(self) -> str:
+        return self.job.name + ' #' + str(self.number)

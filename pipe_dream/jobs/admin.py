@@ -1,6 +1,4 @@
 from django.contrib import admin
-from .models import Job, RepoCredentials, Repo
+from .models import Job, RepoCredentials, Repo, DeployDestination, Run
 
-admin.site.register(Job)
-admin.site.register(RepoCredentials)
-admin.site.register(Repo)
+admin.site.register((Job, RepoCredentials, Repo, DeployDestination, Run))
