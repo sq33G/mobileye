@@ -1,26 +1,37 @@
 from .models import Job, Run, Repo
 from typing import Callable
 from django.utils import timezone
-from datetime import timedelta
+from datetime import datetime, time
 
 class Scheduler:
     def checkAndScheduleRuns(doRun: Callable[[Run], None]):
+        now = timezone.now()
+        today = now.date()
+        beginningOfToday = datetime.combine(today, time(0))
+
         try:
             lastRunTimestamp = Run.objects.latest().started
         except Run.DoesNotExist:
-            lastRunTimestamp = timezone.now() + timedelta(days=-1)
+            lastRunTimestamp = beginningOfToday
+
+        if lastRunTimestamp.date() < today:
+            lastRunTimestamp = beginningOfToday
 
         # use prefetch to make this more efficient
         jobsToSchedule = Job.objects.filter(
             schedule__range=(lastRunTimestamp.time(),
-                             timezone.now().time()))
+                             now.time()))
         for job in jobsToSchedule:
             run = Runner.createRun(job)
             doRun(run)        
 
 class Runner:
     def createRun(job: Job) -> Run:
-        newJobRunNumber = Run.objects.filter(job=job).latest().number + 1
+        try:
+            newJobRunNumber = Run.objects.filter(job=job).latest().number + 1
+        except Run.DoesNotExist:
+            newJobRunNumber = 1
+            
         # if it's still running, probably delay this... or cancel it??
         # also consider if two runs for the same job might get scheduled concurrently??
         run = Run(job = job, 
