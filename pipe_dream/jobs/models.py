@@ -40,15 +40,20 @@ class Run(models.Model):
         COMPLETE = 'C'
         FAILED = 'F'
 
-    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    job = models.ForeignKey(Job, 
+                            on_delete=models.CASCADE, 
+                            related_name="runs")
     number = models.IntegerField() #not unique on its own, only per Job
     buildStatus = models.CharField(max_length=1,
                                    choices=RunState.choices,
                                    default=RunState.SCHEDULED)
-    started = models.DateTimeField()
+    started = models.DateTimeField(blank=True, null=True)
     completed = models.DateTimeField(blank=True, null=True)
     
     # store output as a JSON object, may contain paths to files with script stdout/stderr
     
     def __str__(self) -> str:
         return self.job.name + ' #' + str(self.number)
+    
+    class Meta:
+        get_latest_by = 'started'
