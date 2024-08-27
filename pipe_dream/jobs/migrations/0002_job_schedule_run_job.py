@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='run',
             name='job',
-            field=models.ForeignKey(default=datetime.time(0, 0), on_delete=django.db.models.deletion.CASCADE, to='jobs.job'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='jobs.job'),
             preserve_default=False,
         ),
     ]

@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='run',
             name='started',
-            field=models.DateTimeField(default=datetime.time(0, 0)),
+            field=models.DateTimeField(),
             preserve_default=False,
         ),
     ]
