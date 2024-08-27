@@ -27,9 +27,10 @@ class Job(models.Model):
     name = models.CharField(max_length=50, unique = True)
     repo = models.ForeignKey(Repo, on_delete=models.CASCADE)
     # script = models.FileField()
+    schedule = models.TimeField() # index on this
 
     def __str__(self) -> str:
-        return self.name
+        return self.name + " " + str(self.schedule)
 
 class Run(models.Model):
     class RunState(models.TextChoices):
