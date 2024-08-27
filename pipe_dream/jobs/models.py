@@ -44,6 +44,8 @@ class Run(models.Model):
     buildStatus = models.CharField(max_length=1,
                                    choices=RunState.choices,
                                    default=RunState.SCHEDULED)
+    started = models.DateTimeField()
+    completed = models.DateTimeField(blank=True, null=True)
     
     # store output as a JSON object, may contain paths to files with script stdout/stderr
     

@@ -16,9 +16,16 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path #, include
+from pipe_dream.jobs import views
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'jobs', views.JobViewSet, basename='job')
+router.register(r'runs', views.RunViewSet, basename='run')
 
 urlpatterns = [
     path("admin/", admin.site.urls), 
+    router.urls
     # path("api/auth", include("rest_framework.urls")) # for api auth
 ]
