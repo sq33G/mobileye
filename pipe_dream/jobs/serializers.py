@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from django.utils import timezone
 
 class JobSerializer(serializers.ModelSerializer):
     class Meta:
@@ -7,9 +8,13 @@ class JobSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'repo', 'schedule']
 
 class RunSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        validated_data['started'] = timezone.now()
+        return super().create(validated_data)
+
     class Meta:
         model = Run
-        fields = ['id', 'buildStatus', 'job', 'number']
+        fields = ['id', 'buildStatus', 'job', 'number', 'started', 'completed']
 
 class RepoCredentialsSerializer(serializers.ModelSerializer):
     class Meta:
