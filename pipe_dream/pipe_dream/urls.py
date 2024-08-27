@@ -23,6 +23,9 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register(r'jobs', views.JobViewSet, basename='job')
 router.register(r'runs', views.RunViewSet, basename='run')
+router.register(r'deploy-destinations', views.DeployDestinationViewSet, basename='deploy-destination')
+router.register(r'repos', views.RepoViewSet, basename='repo')
+router.register(r'repo-credentials', views.RepoCredentialsViewSet, basename='repo-credentials')
 
 urlpatterns = [
     path("admin/", admin.site.urls), 

@@ -28,6 +28,7 @@ class Job(models.Model):
     repo = models.ForeignKey(Repo, on_delete=models.CASCADE)
     # script = models.FileField()
     schedule = models.TimeField() # index on this
+    deployTo = models.ManyToManyField(to=DeployDestination)
 
     def __str__(self) -> str:
         return self.name + " " + str(self.schedule)

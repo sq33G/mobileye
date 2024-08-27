@@ -21,3 +21,15 @@ class RunViewSet(viewsets.ModelViewSet):
     filterset_fields = ['buildStatus', 'job']
     ordering_fields = ['buildStatus', 'job', 'number', 'started', 'completed']
     ordering = ['-started']
+
+class DeployDestinationViewSet(viewsets.ModelViewSet):
+    queryset = DeployDestination.objects.all()
+    serializer_class = DeployDestinationSerializer
+
+class RepoViewSet(viewsets.ModelViewSet):
+    queryset = Repo.objects.all()
+    serializer_class = RepoSerializer
+
+class RepoCredentialsViewSet(viewsets.ModelViewSet):
+    queryset = RepoCredentials.objects.all() #ideally, do a more limited view here 
+    serializer_class = RepoCredentialsSerializer
