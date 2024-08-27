@@ -1,1 +1,0 @@
-# https://django-background-tasks.readthedocs.io/en/latest/
