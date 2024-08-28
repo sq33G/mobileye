@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class RepoCredentials(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -47,6 +48,7 @@ class Run(models.Model):
     buildStatus = models.CharField(max_length=1,
                                    choices=RunState.choices,
                                    default=RunState.SCHEDULED)
+    scheduled = models.DateTimeField(default=timezone.now())
     started = models.DateTimeField(blank=True, null=True)
     completed = models.DateTimeField(blank=True, null=True)
     
