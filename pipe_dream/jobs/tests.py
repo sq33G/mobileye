@@ -1,36 +1,36 @@
-from django.test import TransactionTestCase
+from django.test import TestCase
 
 from datetime import time
 
 from .models import Run, Job, DeployDestination, Repo, RepoCredentials
 from .runner import Scheduler
 
-class RunnerTests(TransactionTestCase):
+class RunnerTests(TestCase):
     def setUp(self):
-        repoCredentials = RepoCredentials(name="mock cred")
-        repoCredentials.save()
+        self.repoCredentials = RepoCredentials(name="mock cred")
+        self.repoCredentials.save()
         
-        repo = Repo(name="mock repo", 
+        self.repo = Repo(name="mock repo", 
                     url="http://ghi.fds", 
-                    credentials=repoCredentials)
-        repo.save()
-        dest = DeployDestination(name="mock dest")
-        dest.save()
-        job = Job(name="mock job",
-                repo=repo,
+                    credentials=self.repoCredentials)
+        self.repo.save()
+        self.dest = DeployDestination(name="mock dest")
+        self.dest.save()
+        self.job = Job(name="mock job",
+                repo=self.repo,
                 schedule=time(0,0))
-        job.save()
-        job.deployTo.add(dest)
-        job.save()
+        self.job.save()
+        self.job.deployTo.add(self.dest)
+        self.job.save()
         
-        run = Run(job=job,
+        self.run = Run(job=self.job,
                 buildStatus = Run.RunState.SCHEDULED,
                 number=1)
-        run.save()
+        self.run.save()
 
-    def test_scheduled_run_time_used_to_test_for_downtime(self):
+    def test_scheduled_run_time_used_to_evaluate_downtime(self):
         """
         the latest that a task was scheduled should be used as the last time the scheduler ran
         """
         latest = Run.objects.latest().scheduled
-        self.assertEqual(latest, self.run)
+        self.assertEqual(latest, self.run.scheduled)

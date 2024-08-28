@@ -48,7 +48,7 @@ class Run(models.Model):
     buildStatus = models.CharField(max_length=1,
                                    choices=RunState.choices,
                                    default=RunState.SCHEDULED)
-    scheduled = models.DateTimeField(default=timezone.now())
+    scheduled = models.DateTimeField(default=timezone.now)
     started = models.DateTimeField(blank=True, null=True)
     completed = models.DateTimeField(blank=True, null=True)
     
@@ -59,3 +59,6 @@ class Run(models.Model):
     
     class Meta:
         get_latest_by = 'started'
+
+class Scheduling(models.Model):
+    lastSuccessful = models.DateTimeField(default=timezone.now)

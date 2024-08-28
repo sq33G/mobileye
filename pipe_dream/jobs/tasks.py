@@ -1,5 +1,7 @@
 # https://django-background-tasks.readthedocs.io/en/latest/
 
+# should probably use Celery, better community support
+
 from background_task import background
 from .models import Run
 from .runner import Scheduler, Runner

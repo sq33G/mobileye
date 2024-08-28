@@ -1,29 +1,43 @@
-from .models import Job, Run, Repo
+from .models import Job, Run, Repo, Scheduling
 from typing import Callable
 from django.utils import timezone
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 class Scheduler:
     def checkAndScheduleRuns(doRun: Callable[[Run], None]):
         now = timezone.now()
         today = now.date()
+        yesterday = now + timedelta(days=-1)
         beginningOfToday = datetime.combine(today, time(0))
 
         try:
-            lastRunTimestamp = Run.objects.latest().started
-        except Run.DoesNotExist:
+            scheduling = Scheduling.objects.only()
+        except Scheduling.DoesNotExist:
+            scheduling = Scheduling.objects.create(lastSuccessful=beginningOfToday)
+
+        lastRunTimestamp = scheduling.lastSuccessful
+        if lastRunTimestamp < yesterday:
             lastRunTimestamp = beginningOfToday
 
-        if lastRunTimestamp.date() < today:
-            lastRunTimestamp = beginningOfToday
+        # if last scheduled task was within the past 24 hours,
+        #  maybe there are missed tasks from before 00:00
+        if lastRunTimestamp < beginningOfToday:
+            jobsToSchedule = Job.objects.filter(
+                schedule__range=(lastRunTimestamp.time, time(23,59,59))
+            ) | Job.objects.filter(
+                schedule__range=(time(0,0), now.time)
+            )
+        else:
+            jobsToSchedule = Job.objects.filter(
+                schedule__range=(lastRunTimestamp.time, now.time)
+            )
 
-        # use prefetch to make this more efficient
-        jobsToSchedule = Job.objects.filter(
-            schedule__range=(lastRunTimestamp.time(),
-                             now.time()))
         for job in jobsToSchedule:
             run = Runner.createRun(job)
-            doRun(run)        
+            doRun(run) 
+
+        scheduling.lastSuccessful = timezone.now()
+        scheduling.save()       
 
 class Runner:
     def createRun(job: Job) -> Run:
