@@ -8,14 +8,17 @@ class Scheduler:
         now = timezone.now()
         today = now.date()
         yesterday = now + timedelta(days=-1)
-        beginningOfToday = datetime.combine(today, time(0))
+        beginningOfToday = datetime.combine(today, time(0, tzinfo=timezone.get_current_timezone()))
 
         try:
-            scheduling = Scheduling.objects.only()
+            scheduling = Scheduling.objects.get()
+            lastRunTimestamp = scheduling.lastSuccessful
         except Scheduling.DoesNotExist:
+            # if somehow the scheduler starts running again while this scheduler is
+            # in progress, we will have a race condition that will lead to there being
+            # more than one row in Scheduling. Some kind of locking would help.
             scheduling = Scheduling.objects.create(lastSuccessful=beginningOfToday)
 
-        lastRunTimestamp = scheduling.lastSuccessful
         if lastRunTimestamp < yesterday:
             lastRunTimestamp = beginningOfToday
 
@@ -29,14 +32,14 @@ class Scheduler:
             )
         else:
             jobsToSchedule = Job.objects.filter(
-                schedule__range=(lastRunTimestamp.time, now.time)
+                schedule__range=(lastRunTimestamp.time(), now.time())
             )
 
         for job in jobsToSchedule:
             run = Runner.createRun(job)
-            doRun(run) 
+            doRun(run.id) 
 
-        scheduling.lastSuccessful = timezone.now()
+        scheduling.lastSuccessful = now + timedelta(seconds=1)
         scheduling.save()       
 
 class Runner:
@@ -55,7 +58,8 @@ class Runner:
 
         return run
     
-    def go(run: Run):
+    def go(runId: int):
+        run = Run.objects.filter(id=runId).get()
         run.start()
         # set working directory to unique for job...
         Runner.load(run.job.repo)

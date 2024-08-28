@@ -41,6 +41,7 @@ class Run(models.Model):
         COMPLETE = 'C'
         FAILED = 'F'
 
+    id = models.BigAutoField(primary_key=True) #explicit PK to use for scheduling
     job = models.ForeignKey(Job, 
                             on_delete=models.CASCADE, 
                             related_name="runs")
