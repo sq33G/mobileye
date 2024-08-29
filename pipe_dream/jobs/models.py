@@ -24,18 +24,27 @@ class DeployDestination(models.Model):
     def __str__(self) -> str:
         return self.name
 
+class NotifyDestination(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    # implement using JSON field
+
+    def __str__(self) -> str:
+        return self.name
+
 class ActionAssociation(models.TextChoices):
     PRELOAD = 'L'
     PREBUILD = 'B'
     PREDEPLOY = 'D'
     PRENOTIFY = 'N'
     ONCOMPLETE = 'O'
+
 class Job(models.Model):
     name = models.CharField(max_length=50, unique = True)
     repo = models.ForeignKey(Repo, on_delete=models.CASCADE)
     # script = models.FileField()
     schedule = models.TimeField() # index on this
     deployTo = models.ManyToManyField(to=DeployDestination)
+    notifyTo = models.ManyToManyField(to=NotifyDestination, blank=True)
 
     def __str__(self) -> str:
         return self.name + " " + str(self.schedule)
@@ -97,9 +106,13 @@ class Run(models.Model):
     
     def start(self):
         self.started = timezone.now()
+        self.buildStatus = Run.RunState.RUNNING
+        self.save()
 
     def complete(self):
         self.completed = timezone.now()
+        self.buildStatus = Run.RunState.COMPLETE
+        self.save()
 
     # should record whether success or failure...
     
@@ -108,3 +121,6 @@ class Run(models.Model):
 
 class Scheduling(models.Model):
     lastSuccessful = models.DateTimeField(default=timezone.now)
+
+    def __str__(self) -> str:
+        return "Last successful run at " + str(self.lastSuccessful)

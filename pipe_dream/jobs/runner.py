@@ -4,11 +4,6 @@ from django.utils import timezone
 from datetime import datetime, time, timedelta
 
 class Scheduler:
-    def checkAlreadyRunning(taskName: str) -> bool:
-        from background_task.models import Task
-        running = Task.objects.filter(task_name=taskName).exists()
-        return running
-
     def checkAndScheduleRuns(doRun: Callable[[Run], None]):
         now = timezone.now()
         today = now.date()
@@ -42,8 +37,14 @@ class Scheduler:
                 schedule__range=(lastRunTimestamp.time(), now.time())
             )
 
+        runs = []
         for job in jobsToSchedule:
             run = Runner.createRun(job)
+            runs.append(run)
+        
+        # this could be split out to run on different machines to manage load
+
+        for run in runs:
             doRun(run.id) 
 
         scheduling.lastSuccessful = now + timedelta(seconds=1)
@@ -97,7 +98,8 @@ class Runner:
             print('mock: deploy results from ', run, ' to ', dest)
 
     def notify(run: Run):
-        print('not implemented: notify')
+        for dest in run.job.notifyTo.all():
+            print('mock: notify of results from ', run, ' to ', dest)
 
     def runActions(actions: List[Action]):
         for action in actions:

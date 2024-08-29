@@ -5,7 +5,7 @@ from django.utils import timezone
 class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
-        fields = ['id', 'name', 'repo', 'schedule', 'deployTo']
+        fields = ['id', 'name', 'repo', 'schedule', 'deployTo', 'notifyTo']
 
 class RunSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
@@ -29,4 +29,9 @@ class RepoSerializer(serializers.ModelSerializer):
 class DeployDestinationSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeployDestination
+        fields = ['id', 'name']
+
+class NotifyDestinationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotifyDestination
         fields = ['id', 'name']

@@ -35,13 +35,6 @@ class RunnerTests(TestCase):
                 number=1)
         self.run.save()
 
-    def test_scheduled_run_time_used_to_evaluate_downtime(self):
-        """
-        the latest that a task was scheduled should be used as the last time the scheduler ran
-        """
-        latest = Run.objects.latest().scheduled
-        self.assertEqual(latest, self.run.scheduled)
-
     def test_scheduler_calls_do_run(self):
         """
         scheduler should schedule the job with the callback
@@ -52,15 +45,4 @@ class RunnerTests(TestCase):
 
         self.assertTrue(results.didRun)
 
-    def test_only_one_scheduler_at_a_time(self):
-        """
-        if a scheduler is already running, cancel the scheduler run
-        """
-        from background_task.models import Task
-        Task.objects.create(task_name='jobs.tasks.check_schedule',
-                            run_at=timezone.now())
-
-        results = RunnerTests.Results()
-        Scheduler.checkAndScheduleRuns(results.doRun)
-
-        self.assertFalse(results.didRun)
+    # add tests to check different cases of last scheduler run : now

@@ -33,3 +33,7 @@ class RepoViewSet(viewsets.ModelViewSet):
 class RepoCredentialsViewSet(viewsets.ModelViewSet):
     queryset = RepoCredentials.objects.all() #ideally, do a more limited view here 
     serializer_class = RepoCredentialsSerializer
+
+class NotificationDestinationViewSet(viewsets.ModelViewSet):
+    queryset = NotifyDestination.objects.all()
+    serializer_class = NotifyDestinationSerializer

@@ -21,9 +21,9 @@
             "request": "launch",
             "program": "${workspaceFolder}/pipe_dream/manage.py",
             "args": [
-                "process_tasks",
-                "--duration",
-                "10"
+                "shell",
+                "<",
+                "pipe_dream/jobs/tasks.py"
             ],
             "django": true
         }
