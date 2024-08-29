@@ -1,5 +1,5 @@
-from .models import Job, Run, Repo, Scheduling
-from typing import Callable
+from .models import Job, Run, Repo, Scheduling, Action
+from typing import Callable, List
 from django.utils import timezone
 from datetime import datetime, time, timedelta
 
@@ -33,9 +33,9 @@ class Scheduler:
         #  maybe there are missed tasks from before 00:00
         if lastRunTimestamp < beginningOfToday:
             jobsToSchedule = Job.objects.filter(
-                schedule__range=(lastRunTimestamp.time, time(23,59,59))
+                schedule__range=(lastRunTimestamp.time(), time(23,59,59))
             ) | Job.objects.filter(
-                schedule__range=(time(0,0), now.time)
+                schedule__range=(time(0,0), now.time())
             )
         else:
             jobsToSchedule = Job.objects.filter(
@@ -75,14 +75,15 @@ class Runner:
         run = Run.objects.filter(id=runId).get()
         run.start()
         # set working directory to unique for job...
+        Runner.runActions(run.job.preload_actions())
         Runner.load(run.job.repo)
-        run.begin_build()
+        Runner.runActions(run.job.prebuild_actions())
         Runner.build(run)
-        run.begin_deploy()
+        Runner.runActions(run.job.predeploy_actions())
         Runner.deploy(run)
-        run.begin_notify()
+        Runner.runActions(run.job.prenotify_actions())
         Runner.notify(run)
-        # in future, allow more actions...
+        Runner.runActions(run.job.oncomplete_actions())
         run.complete()
     
     def load(repo: Repo):
@@ -92,9 +93,14 @@ class Runner:
         print('mock: building ', run)
 
     def deploy(run: Run):
-        for dest in run.job.deployTo:
+        for dest in run.job.deployTo.all():
             print('mock: deploy results from ', run, ' to ', dest)
 
     def notify(run: Run):
         print('not implemented: notify')
+
+    def runActions(actions: List[Action]):
+        for action in actions:
+            print('mock: run action ', action)
+
 

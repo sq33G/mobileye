@@ -32,12 +32,3 @@ urlpatterns = [
     path("", include(router.urls))
     # path("api/auth", include("rest_framework.urls")) # for api auth
 ]
-
-# not ideal to do this in such a random location, could do an endpoint instead?
-from jobs.runner import Scheduler
-alreadyScheduled = Scheduler.checkAlreadyRunning("jobs.tasks.check_schedule")
-if alreadyScheduled:
-    print('scheduler already set to run, cancel')
-else:
-    from jobs.tasks import check_schedule
-    check_schedule(repeat=60)

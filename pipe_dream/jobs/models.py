@@ -24,6 +24,12 @@ class DeployDestination(models.Model):
     def __str__(self) -> str:
         return self.name
 
+class ActionAssociation(models.TextChoices):
+    PRELOAD = 'L'
+    PREBUILD = 'B'
+    PREDEPLOY = 'D'
+    PRENOTIFY = 'N'
+    ONCOMPLETE = 'O'
 class Job(models.Model):
     name = models.CharField(max_length=50, unique = True)
     repo = models.ForeignKey(Repo, on_delete=models.CASCADE)
@@ -33,6 +39,37 @@ class Job(models.Model):
 
     def __str__(self) -> str:
         return self.name + " " + str(self.schedule)
+    
+    def preload_actions(self):
+        return self.actionsByAssociation(ActionAssociation.PRELOAD)
+    
+    def prebuild_actions(self):
+        return self.actionsByAssociation(ActionAssociation.PREBUILD)
+    
+    def predeploy_actions(self):
+        return self.actionsByAssociation(ActionAssociation.PREDEPLOY)
+    
+    def prenotify_actions(self):
+        return self.actionsByAssociation(ActionAssociation.PRENOTIFY)
+    
+    def oncomplete_actions(self):
+        return self.actionsByAssociation(ActionAssociation.ONCOMPLETE)
+    
+    def actionsByAssociation(self, association:ActionAssociation):
+        return self.actions.filter(association = association)
+
+class Action(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    # script = models.FileField
+    job = models.ForeignKey(Job, 
+                            on_delete=models.CASCADE,
+                            related_name="actions")
+    association = models.CharField(max_length=1,
+                                   choices=ActionAssociation.choices,
+                                   default=ActionAssociation.PREBUILD)
+    
+    def __str__(self):
+        return self.name + " (" + self.association + ", " + self.job + ")"
 
 class Run(models.Model):
     class RunState(models.TextChoices):
@@ -57,6 +94,14 @@ class Run(models.Model):
     
     def __str__(self) -> str:
         return self.job.name + ' #' + str(self.number)
+    
+    def start(self):
+        self.started = timezone.now()
+
+    def complete(self):
+        self.completed = timezone.now()
+
+    # should record whether success or failure...
     
     class Meta:
         get_latest_by = 'started'
