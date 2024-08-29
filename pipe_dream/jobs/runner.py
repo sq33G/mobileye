@@ -10,6 +10,8 @@ class Scheduler:
         yesterday = now + timedelta(days=-1)
         beginningOfToday = datetime.combine(today, time(0, tzinfo=timezone.get_current_timezone()))
 
+        lastRunTimestamp = None
+
         try:
             scheduling = Scheduling.objects.get()
             lastRunTimestamp = scheduling.lastSuccessful
@@ -19,7 +21,7 @@ class Scheduler:
             # more than one row in Scheduling. Some kind of locking would help.
             scheduling = Scheduling.objects.create(lastSuccessful=beginningOfToday)
 
-        if lastRunTimestamp < yesterday:
+        if not lastRunTimestamp or (lastRunTimestamp < yesterday):
             lastRunTimestamp = beginningOfToday
 
         # if last scheduled task was within the past 24 hours,
