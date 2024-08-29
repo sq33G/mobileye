@@ -4,7 +4,16 @@ from django.utils import timezone
 from datetime import datetime, time, timedelta
 
 class Scheduler:
+    def checkAlreadyRunning() -> bool:
+        from background_task.models import Task
+        running = Task.objects.filter(task_name="jobs.tasks.check_schedule").exists()
+        return running
+
     def checkAndScheduleRuns(doRun: Callable[[Run], None]):
+        alreadyRunning = Scheduler.checkAlreadyRunning()
+        if alreadyRunning:
+            return
+
         now = timezone.now()
         today = now.date()
         yesterday = now + timedelta(days=-1)
