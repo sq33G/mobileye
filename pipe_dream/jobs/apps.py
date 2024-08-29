@@ -7,4 +7,4 @@ class JobsConfig(AppConfig):
     def ready(self):
         # not ideal to do this in app start, could do an endpoint instead?
         from .tasks import check_schedule
-        check_schedule(repeat=5)
+        check_schedule(repeat=60)
