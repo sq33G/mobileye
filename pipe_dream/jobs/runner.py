@@ -4,16 +4,12 @@ from django.utils import timezone
 from datetime import datetime, time, timedelta
 
 class Scheduler:
-    def checkAlreadyRunning() -> bool:
+    def checkAlreadyRunning(taskName: str) -> bool:
         from background_task.models import Task
-        running = Task.objects.filter(task_name="jobs.tasks.check_schedule").exists()
+        running = Task.objects.filter(task_name=taskName).exists()
         return running
 
     def checkAndScheduleRuns(doRun: Callable[[Run], None]):
-        alreadyRunning = Scheduler.checkAlreadyRunning()
-        if alreadyRunning:
-            return
-
         now = timezone.now()
         today = now.date()
         yesterday = now + timedelta(days=-1)
@@ -55,6 +51,12 @@ class Scheduler:
 
 class Runner:
     def createRun(job: Job) -> Run:
+        #test if job is already scheduled, don't schedule if so - need to know how to look at task args for this
+        # alreadyRunning = Scheduler.checkAlreadyRunning("jobs.tasks.check_schedule")
+        # if alreadyRunning:
+        #     print('scheduler already running, cancel')
+        #     return
+
         try:
             newJobRunNumber = Run.objects.filter(job=job).latest().number + 1
         except Run.DoesNotExist:
